@@ -18,7 +18,24 @@ extern "C" {
 
 #include <zephyr/sys/__assert.h>
 
-#else /* __ZEPHYR__ */
+#elif defined(__BARE_METAL__)
+
+/*
+ * Bare-metal: avoid exit()/atexit cleanup (pulls in newlib stdio teardown).
+ * printf is expected to be provided by the platform; on failure, halt.
+ */
+#define __ASSERT_PRINT(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#define __ASSERT(test, fmt, ...)                                          \
+	do {                                                              \
+		if (!(test)) {                                            \
+			__ASSERT_PRINT("ASSERTION FAIL [%s] @ %s:%d\n\t" fmt "\n", \
+				       STR(test), __FILE__, __LINE__,     \
+				       ##__VA_ARGS__);                    \
+			for (;;) { }                                      \
+		}                                                         \
+	} while (0)
+
+#else /* everything else expects libc */
 
 #define __ASSERT_PRINT(fmt, ...) printf(fmt, ##__VA_ARGS__)
 

@@ -201,9 +201,21 @@ typedef uint64_t tick_t;
 #endif
 
 /**
+ * @brief Return a non-cryptographic random uint32.
+ *
+ * Bare-metal builds use an internal xorshift; hosted builds forward to
+ * libc rand(). Cryptographic callers must NOT use this.
+ *
+ * Defined as __weak: platforms that can do better (e.g. an STM32 RNG
+ * peripheral, an mbedTLS DRBG, /dev/urandom) should provide their own
+ * strong override.
+ */
+__weak uint32_t rand_u32(void);
+
+/**
  * @brief Return random number between 0 and `limit` both inclusive.
  *
- * Note: the random number generator must be pre-seeded.
+ * Backed by rand_u32(). Non-cryptographic.
  */
 int randint(int limit);
 

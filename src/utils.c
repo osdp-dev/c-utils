@@ -19,15 +19,35 @@ _Static_assert(IS_ENABLED(_IS_ENABLED_SELFTEST_OFF) == 0,
 	       "IS_ENABLED(): undefined flag must evaluate to 0");
 #undef _IS_ENABLED_SELFTEST_ON
 
+__weak uint32_t rand_u32(void)
+{
+#ifdef __BARE_METAL__
+	/*
+	 * libc's rand() references _impure_ptr, which pulls newlib's
+	 * default FILE table (__sf) and the stdio teardown chain
+	 * (_close_r/_lseek_r/_read_r/_write_r) into the link even when
+	 * nothing else uses stdio. Replace it with a self-contained
+	 * xorshift — same non-cryptographic quality as rand(), zero libc
+	 * dependency.
+	 */
+	static uint32_t s_state = 0x9E3779B9u;
+	uint32_t x = s_state;
+
+	x ^= x << 13;
+	x ^= x >> 17;
+	x ^= x << 5;
+	s_state = x ? x : 1u;
+	return x;
+#else
+	return (uint32_t)rand();
+#endif
+}
+
 int randint(int limit)
 {
-	int r;
-	int divisor = RAND_MAX / (limit + 1);
+	uint32_t span = (uint32_t)limit + 1u;
 
-	do {
-		r = rand() / divisor;
-	} while (r > limit);
-	return r;
+	return (int)(rand_u32() % span);
 }
 
 uint32_t round_up_pow2(uint32_t v)
@@ -53,6 +73,18 @@ int num_digits_in_number(int num)
 	}
 	return digits;
 }
+
+#ifdef __BARE_METAL__
+
+__format_printf(3, 4)
+void hexdump(const void *p, size_t len, const char *fmt, ...)
+{
+	ARG_UNUSED(p);
+	ARG_UNUSED(len);
+	ARG_UNUSED(fmt);
+}
+
+#else
 
 __format_printf(3, 4)
 void hexdump(const void *p, size_t len, const char *fmt, ...)
@@ -91,6 +123,8 @@ void hexdump(const void *p, size_t len, const char *fmt, ...)
 
 	printf("\n");
 }
+
+#endif /* __BARE_METAL__ */
 
 #if (defined(_WIN32) || defined(_WIN64))
 #define WIN32_LEAN_AND_MEAN
@@ -283,6 +317,8 @@ void dump_trace(void)
 	puts("");
 	free(strings);
 }
+#elif defined(__BARE_METAL__)
+void dump_trace(void) { }
 #else
 void dump_trace(void)
 {
