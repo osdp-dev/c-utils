@@ -59,7 +59,7 @@ static const char *log_level_names[LOG_MAX_LEVEL] = {
 
 static inline void logger_log_set_color(logger_t *ctx, const char *color)
 {
-#if !defined(__BARE_METAL__) && !defined(__ZEPHYR__)
+#if !defined(__BARE_METAL__) && !defined(__ZEPHYR__) && !defined(MYNEWT)
 	size_t ret, len;
 
 	if (ctx->flags & LOGGER_FLAG_NO_COLORS)

@@ -259,7 +259,46 @@ int add_iso8601_utc_datetime(char* buf, size_t size) {
 	ARG_UNUSED(size);
 	return 0;
 }
+#elif defined(MYNEWT)
 
+#include <os/os_time.h>
+
+#ifndef _TIMEVAL_DEFINED
+struct timeval {
+	long tv_sec;  // seconds since epoch
+	long tv_usec; // microseconds
+};
+#endif
+
+#ifndef _TIMEZONE_DEFINED
+struct timezone {
+	int tz_minuteswest; // minutes west of UTC
+	int tz_dsttime;     // daylight saving time flag
+};
+#endif
+
+int gettimeofday(struct timeval * tp, struct timezone * tzp)
+{
+	struct os_timeval tv;
+	struct os_timezone tz;
+
+	os_gettimeofday(&tv, &tz);
+
+	tp->tv_sec = (long)tv.tv_sec;
+	tp->tv_usec = (long)tv.tv_usec;
+
+	tzp->tz_minuteswest = (int)tz.tz_minuteswest;
+	tzp->tz_dsttime = (int)tz.tz_dsttime;
+
+	return 0;
+}
+
+int add_iso8601_utc_datetime(char *buf, size_t size)
+{
+	ARG_UNUSED(buf);
+	ARG_UNUSED(size);
+	return 0;
+}
 #else
 
 #error Platform test failed
