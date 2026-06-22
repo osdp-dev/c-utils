@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 	// Display test header
 	printf("\n");
 	printf("------------------------------------------\n");
-	printf("       goToMain C Unit Test Framework     \n");
+	printf("       osdp-dev C Unit Test Framework     \n");
 	printf("------------------------------------------\n");
 
 	// Run tests
