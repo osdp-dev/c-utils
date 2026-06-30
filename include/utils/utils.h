@@ -165,6 +165,15 @@ extern "C" {
 
 #include <zephyr/toolchain.h>  // __weak, __builtin_xxx() etc.,
 
+/*
+ * The #undef __weak above unconditionally drops any prior definition. When
+ * <zephyr/toolchain.h> was already pulled in (e.g. via <zephyr/kernel.h>),
+ * its include guard makes the re-include a no-op and __weak stays undefined.
+ * Restore it so header-level __weak declarations below still parse.
+ */
+#ifndef __weak
+#define __weak                  __attribute__((weak))
+#endif
 #define PATH_SEPARATOR          '/'
 #define __unreachable()         __builtin_unreachable()
 #define __format_printf(x, y)   __attribute__((format(printf, x, y)))
