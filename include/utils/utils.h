@@ -109,8 +109,15 @@ extern "C" {
 
 #define ABS(x)		((x) >= 0  ? (x) : -(x))
 
-/* config_enabled() from the kernel */
-#ifndef IS_ENABLED
+/*
+ * config_enabled() from the kernel. Zephyr's <zephyr/sys/util_macro.h>
+ * defines IS_ENABLED() without an #ifndef guard, so a unit that included
+ * this header first and Zephyr's second would see it redefined; on Zephyr,
+ * take that definition instead.
+ */
+#if defined(__ZEPHYR__)
+#include <zephyr/sys/util_macro.h>
+#elif !defined(IS_ENABLED)
 #define __IS_ENABLED1(x)             __IS_ENABLED2(__XXXX ## x)
 #define __XXXX1                       __YYYY,
 #define __IS_ENABLED2(y)             __IS_ENABLED3(y 1, 0)
