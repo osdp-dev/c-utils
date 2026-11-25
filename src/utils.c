@@ -85,6 +85,8 @@ __weak uint32_t rand_u32(void)
 	return x;
 #endif
 
+#elif defined(__OpenBSD__)
+	return arc4random();
 #else
 	return (uint32_t)rand();
 #endif
@@ -221,7 +223,7 @@ int add_iso8601_utc_datetime(char* buf, size_t size)
 	return r;
 }
 
-#elif defined(__linux__) || defined(__APPLE__) || defined(ESP_PLATFORM)
+#elif defined(__linux__) || defined(__APPLE__) || defined(ESP_PLATFORM) || defined (__OpenBSD__)
 
 #include <sys/time.h>
 #include <time.h>
@@ -389,7 +391,7 @@ tick_t millis_since(tick_t last)
 	return millis_now() - last;
 }
 
-#if (defined(__linux__) || defined(__APPLE__)) && defined(__GLIBC__)
+#if (defined(__linux__) || defined(__APPLE__) || defined(__OpenBSD__)) && defined(__GLIBC__)
 #include <execinfo.h>
 void dump_trace(void)
 {
